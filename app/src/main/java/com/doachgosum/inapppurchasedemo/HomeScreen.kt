@@ -102,6 +102,8 @@ fun Int.toResponseCodeString(): String = when (this) {
     BillingResponseCode.BILLING_UNAVAILABLE -> "BILLING_UNAVAILABLE"
     BillingResponseCode.ERROR -> "ERROR"
     BillingResponseCode.ITEM_ALREADY_OWNED -> "ITEM_ALREADY_OWNED"
+    BillingResponseCode.ITEM_UNAVAILABLE -> "ITEM_UNAVAILABLE"
     BillingResponseCode.ITEM_NOT_OWNED -> "ITEM_NOT_OWNED"
+    BillingResponseCode.DEVELOPER_ERROR -> "DEVELOPER_ERROR"
     else -> "UNKNOWN"
 }
