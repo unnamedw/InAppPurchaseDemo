@@ -50,6 +50,10 @@ class MainActivity : ComponentActivity() {
                                     billingClientWrapper
                                 )
                             }
+
+                            composable(historyRoute) {
+                                HistoryScreen(clientWrapper = billingClientWrapper)
+                            }
                         }
                     }
                 }

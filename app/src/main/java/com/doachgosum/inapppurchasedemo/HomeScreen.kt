@@ -1,9 +1,12 @@
 package com.doachgosum.inapppurchasedemo
 
 import android.app.Activity
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -14,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.navigation.NavHostController
+import com.android.billingclient.api.BillingClient.BillingResponseCode
 import com.android.billingclient.api.BillingFlowParams
 
 const val homeRoute = "home"
@@ -23,12 +27,15 @@ fun HomeScreen(
     mainViewModel: MainViewModel,
     clientWrapper: BillingClientWrapper
 ) {
+    val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     lifecycle.removeObserver(clientWrapper)
     lifecycle.addObserver(clientWrapper)
 
+    val scrollState = rememberScrollState()
+
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -37,8 +44,10 @@ fun HomeScreen(
         val buttonModels by remember {
             derivedStateOf {
                 products.map {
-                    listOf(
-                        ButtonModel(it.name) {
+                    listOfNotNull(
+
+                        // 상품
+                        ButtonModel("${it.name} (${it.oneTimePurchaseOfferDetails?.priceCurrencyCode} ${it.oneTimePurchaseOfferDetails?.formattedPrice})") {
                             val billingParams = listOf(
                                 BillingFlowParams.ProductDetailsParams.newBuilder()
                                     .setProductDetails(it)
@@ -51,25 +60,48 @@ fun HomeScreen(
                                     .build()
                             )
                         },
-                        ButtonModel("consume ${it.name}") {
-                            mainViewModel.consumeProduct(it) { purchase ->
-                                clientWrapper.consumeOneTimeProduct(purchase)
+
+                        // consume
+                        ButtonModel("consume") {
+                            mainViewModel.getProductPurchase(it) { purchase ->
+                                val result = clientWrapper.consumeOneTimeProduct(purchase)
+                                Toast.makeText(context, result.billingResult.responseCode.toResponseCodeString(), Toast.LENGTH_SHORT).show()
+                            }
+                        },
+
+                        // acknowledge
+                        ButtonModel("acknowledge") {
+                            mainViewModel.getProductPurchase(it) { purchase ->
+                                val result = clientWrapper.acknowledgeOneTimeProduct(purchase)
+                                Toast.makeText(context, result.responseCode.toResponseCodeString(), Toast.LENGTH_SHORT).show()
                             }
                         }
+
                     )
-                }.flatten()
+                }.flatten() + listOf(
+                    ButtonModel("구매내역") {
+                        mainNavController.navigate(historyRoute)
+                    },
+                )
             }
         }
 
         ButtonGroup(
             buttonModels = buttonModels
         )
-
-        ButtonGroup(
-            buttonModels = listOf(
-
-            )
-        )
     }
 }
 
+fun Int.toResponseCodeString(): String = when (this) {
+    BillingResponseCode.OK -> "OK"
+    BillingResponseCode.FEATURE_NOT_SUPPORTED -> "FEATURE_NOT_SUPPORTED"
+    BillingResponseCode.SERVICE_UNAVAILABLE -> "SERVICE_UNAVAILABLE"
+    BillingResponseCode.SERVICE_DISCONNECTED -> "SERVICE_DISCONNECTED"
+    BillingResponseCode.USER_CANCELED -> "USER_CANCELED"
+    BillingResponseCode.SERVICE_TIMEOUT -> "SERVICE_TIMEOUT"
+    BillingResponseCode.BILLING_UNAVAILABLE -> "BILLING_UNAVAILABLE"
+    BillingResponseCode.ERROR -> "ERROR"
+    BillingResponseCode.ITEM_ALREADY_OWNED -> "ITEM_ALREADY_OWNED"
+    BillingResponseCode.ITEM_NOT_OWNED -> "ITEM_NOT_OWNED"
+    else -> "UNKNOWN"
+}

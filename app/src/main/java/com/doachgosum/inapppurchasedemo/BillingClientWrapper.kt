@@ -5,6 +5,7 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClientStateListener
 import com.android.billingclient.api.BillingFlowParams
@@ -19,6 +20,7 @@ import com.android.billingclient.api.PurchasesResponseListener
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchasesParams
+import com.android.billingclient.api.acknowledgePurchase
 import com.android.billingclient.api.consumePurchase
 import com.doachgosum.inapppurchasedemo.BillingConstants.LIST_OF_ONE_TIME_PRODUCTS
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -242,13 +244,24 @@ class BillingClientWrapper @Inject constructor(
     suspend fun consumeOneTimeProduct(purchase: Purchase): ConsumeResult {
         val consumeParams =
             ConsumeParams.newBuilder()
-                .setPurchaseToken(purchase.getPurchaseToken())
+                .setPurchaseToken(purchase.purchaseToken)
                 .build()
         val consumeResult = withContext(Dispatchers.IO) {
             billingClient.consumePurchase(consumeParams)
         }
 
         return consumeResult
+    }
+
+    suspend fun acknowledgeOneTimeProduct(purchase: Purchase): BillingResult {
+        val acknowledgePurchaseParams = AcknowledgePurchaseParams.newBuilder()
+            .setPurchaseToken(purchase.purchaseToken)
+            .build()
+        val acknowledgePurchaseResult = withContext(Dispatchers.IO) {
+            billingClient.acknowledgePurchase(acknowledgePurchaseParams)
+        }
+
+        return acknowledgePurchaseResult
     }
 
     companion object {
