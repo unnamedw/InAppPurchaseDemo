@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.inapppurchasedemo"
+    namespace = "com.doachgosum.inapppurchasedemo"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.inapppurchasedemo"
+        applicationId = "com.doachgosum.inapppurchasedemo"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
@@ -32,17 +32,17 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
+        kotlinCompilerExtensionVersion = "1.5.2"
     }
     packaging {
         resources {
@@ -71,7 +71,13 @@ dependencies {
 
     implementation(libs.billingclient.billing.ktx)
     implementation(libs.com.google.code.gson)
+
+    // hilt
     implementation(libs.google.hilt)
+    implementation(libs.androidx.hilt.navigation.compose)
     ksp(libs.google.hilt.compiler)
+
+    // navigation-compose
+    implementation(libs.androidx.navigation.compose)
 
 }

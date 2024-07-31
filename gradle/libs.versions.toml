@@ -1,6 +1,7 @@
 [versions]
 agp = "8.4.0"
 billingKtxVersion = "7.0.0"
+hiltNavigationCompose = "1.2.0"
 kotlin = "1.9.0"
 coreKtx = "1.13.1"
 junit = "4.13.2"
@@ -8,12 +9,15 @@ junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.3"
 activityCompose = "1.9.0"
-composeBom = "2023.08.00"
-hilt = "2.50"
-ksp = "1.9.24-1.0.20"
+composeBom = "2024.06.00"
+hilt = "2.51"
+ksp = "1.9.0-1.0.12"
+navVersion = "2.7.7"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navVersion" }
 billingclient-billing-ktx = { module = "com.android.billingclient:billing-ktx", version.ref = "billingKtxVersion" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
