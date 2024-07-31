@@ -80,4 +80,6 @@ dependencies {
     // navigation-compose
     implementation(libs.androidx.navigation.compose)
 
+    // kotlin instant
+    implementation(libs.kotlinx.datetime)
 }

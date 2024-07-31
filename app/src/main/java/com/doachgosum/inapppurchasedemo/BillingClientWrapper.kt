@@ -23,9 +23,10 @@ import com.android.billingclient.api.QueryPurchasesParams
 import com.android.billingclient.api.acknowledgePurchase
 import com.android.billingclient.api.consumePurchase
 import com.doachgosum.inapppurchasedemo.BillingConstants.LIST_OF_ONE_TIME_PRODUCTS
+import com.doachgosum.inapppurchasedemo.di.DispatcherQualifiers
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,10 +36,11 @@ import javax.inject.Inject
 
 class BillingClientWrapper @Inject constructor(
     @ApplicationContext private val applicationContext: Context,
+    @DispatcherQualifiers.IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    private val externalScope: CoroutineScope = CoroutineScope(SupervisorJob() + ioDispatcher)
 ) : DefaultLifecycleObserver, BillingClientStateListener,
     PurchasesUpdatedListener, ProductDetailsResponseListener, PurchasesResponseListener
 {
-    private val externalScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     private fun logger(block: () -> String) {
         Log.d("BillingClient", block())
@@ -47,8 +49,8 @@ class BillingClientWrapper @Inject constructor(
     private val _oneTimeProductPurchases = MutableStateFlow<List<Purchase>>(emptyList())
     val oneTimeProductPurchases = _oneTimeProductPurchases.asStateFlow()
 
-    private val _oneTimeProductWithProductDetails = MutableStateFlow<List<ProductDetails>>(emptyList())
-    val oneTimeProductWithProductDetails = _oneTimeProductWithProductDetails.asStateFlow()
+    private val _oneTimeProductDetails = MutableStateFlow<List<ProductDetails>>(emptyList())
+    val oneTimeProductDetails = _oneTimeProductDetails.asStateFlow()
 
     private var cachedPurchasesList: List<Purchase>? = null
 
@@ -154,7 +156,7 @@ class BillingClientWrapper @Inject constructor(
             .filter { it.productType == BillingClient.ProductType.INAPP }
             .filter { LIST_OF_ONE_TIME_PRODUCTS.contains(it.productId) }
 
-        _oneTimeProductWithProductDetails.value = oneTimeProductDetailsList
+        _oneTimeProductDetails.value = oneTimeProductDetailsList
     }
 
     /**
@@ -246,7 +248,7 @@ class BillingClientWrapper @Inject constructor(
             ConsumeParams.newBuilder()
                 .setPurchaseToken(purchase.purchaseToken)
                 .build()
-        val consumeResult = withContext(Dispatchers.IO) {
+        val consumeResult = withContext(ioDispatcher) {
             billingClient.consumePurchase(consumeParams)
         }
 
@@ -257,23 +259,23 @@ class BillingClientWrapper @Inject constructor(
         val acknowledgePurchaseParams = AcknowledgePurchaseParams.newBuilder()
             .setPurchaseToken(purchase.purchaseToken)
             .build()
-        val acknowledgePurchaseResult = withContext(Dispatchers.IO) {
+        val acknowledgePurchaseResult = withContext(ioDispatcher) {
             billingClient.acknowledgePurchase(acknowledgePurchaseParams)
         }
 
         return acknowledgePurchaseResult
     }
 
-    companion object {
-
-        @Volatile
-        private var INSTANCE: BillingClientWrapper? = null
-
-        fun getInstance(applicationContext: Context): BillingClientWrapper =
-            INSTANCE ?: synchronized(this) {
-                INSTANCE ?: BillingClientWrapper(applicationContext).also { INSTANCE = it }
-            }
-    }
+//    companion object {
+//
+//        @Volatile
+//        private var INSTANCE: BillingClientWrapper? = null
+//
+//        fun getInstance(applicationContext: Context): BillingClientWrapper =
+//            INSTANCE ?: synchronized(this) {
+//                INSTANCE ?: BillingClientWrapper(applicationContext).also { INSTANCE = it }
+//            }
+//    }
 
 }
 

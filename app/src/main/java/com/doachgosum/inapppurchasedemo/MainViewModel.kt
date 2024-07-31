@@ -14,7 +14,7 @@ class MainViewModel @Inject constructor(
     private val clientWrapper: BillingClientWrapper
 ): ViewModel() {
 
-    val productList: StateFlow<List<ProductDetails>> = clientWrapper.oneTimeProductWithProductDetails
+    val productList: StateFlow<List<ProductDetails>> = clientWrapper.oneTimeProductDetails
     val purchases: StateFlow<List<Purchase>> = clientWrapper.oneTimeProductPurchases
 
 //    fun buyProduct(activity: Activity, productDetails: ProductDetails) {
