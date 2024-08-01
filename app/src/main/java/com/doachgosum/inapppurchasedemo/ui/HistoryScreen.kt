@@ -1,4 +1,4 @@
-package com.doachgosum.inapppurchasedemo
+package com.doachgosum.inapppurchasedemo.ui
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Column
@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.android.billingclient.api.Purchase.PurchaseState
+import com.doachgosum.inapppurchasedemo.utils.BillingClientWrapper
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime

@@ -2,24 +2,8 @@ package com.doachgosum.inapppurchasedemo.data
 
 import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
-
-/**
- * Domain models
- * */
-data class BillingProductDetail(
-    val productId: String,
-    val productName: String,
-    val formattedPrice: String = "",
-    val price: Long = 0L,
-    val localizedCurrency: String = "",
-    val timestamp: Instant = Clock.System.now(),
-)
-
-data class BillingProductPurchase(
-    val purchaseToken: String = ""
-)
+import com.doachgosum.inapppurchasedemo.domain.BillingProductDetail
+import com.doachgosum.inapppurchasedemo.domain.BillingProductPurchase
 
 /**
  * Mappers
@@ -33,10 +17,7 @@ internal fun ProductDetails.toBillingProductDetail(): BillingProductDetail {
 
 internal fun List<ProductDetails>.toBillingProductDetails(): List<BillingProductDetail> {
     return map {
-        BillingProductDetail(
-            productId = it.productId,
-            productName = it.name
-        )
+        it.toBillingProductDetail()
     }
 }
 
@@ -48,8 +29,6 @@ internal fun Purchase.toBillingProductPurchase(): BillingProductPurchase {
 
 internal fun List<Purchase>.toBillingProductPurchases(): List<BillingProductPurchase> {
     return map {
-        BillingProductPurchase(
-            purchaseToken = it.purchaseToken
-        )
+        it.toBillingProductPurchase()
     }
 }

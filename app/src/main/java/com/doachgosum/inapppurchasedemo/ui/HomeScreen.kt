@@ -1,4 +1,4 @@
-package com.doachgosum.inapppurchasedemo
+package com.doachgosum.inapppurchasedemo.ui
 
 import android.app.Activity
 import android.widget.Toast
@@ -19,6 +19,10 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.navigation.NavHostController
 import com.android.billingclient.api.BillingClient.BillingResponseCode
 import com.android.billingclient.api.BillingFlowParams
+import com.doachgosum.inapppurchasedemo.ui.component.ButtonGroup
+import com.doachgosum.inapppurchasedemo.ui.component.ButtonModel
+import com.doachgosum.inapppurchasedemo.MainViewModel
+import com.doachgosum.inapppurchasedemo.utils.BillingClientWrapper
 
 const val homeRoute = "home"
 @Composable

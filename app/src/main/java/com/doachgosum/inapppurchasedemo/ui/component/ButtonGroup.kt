@@ -1,4 +1,4 @@
-package com.doachgosum.inapppurchasedemo
+package com.doachgosum.inapppurchasedemo.ui.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

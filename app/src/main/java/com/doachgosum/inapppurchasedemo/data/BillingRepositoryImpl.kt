@@ -1,6 +1,6 @@
 package com.doachgosum.inapppurchasedemo.data
 
-import com.doachgosum.inapppurchasedemo.BillingClientWrapper
+import com.doachgosum.inapppurchasedemo.utils.BillingClientWrapper
 import com.doachgosum.inapppurchasedemo.di.DiConstant
 import com.doachgosum.inapppurchasedemo.di.DispatcherQualifiers
 import kotlinx.coroutines.CoroutineDispatcher
@@ -46,6 +46,9 @@ interface BillingRepository {
     val oneTimeProductDetails: StateFlow<List<BillingProductDetail>>
     val oneTimeProductPurchase: StateFlow<List<BillingProductPurchase>>
 
+    /**
+     * 구매 후 서버 쪽에 등록하기 위한 함수
+     * */
     suspend fun registerOneTimeProduct(
         productId: String,
         purchaseToken: String

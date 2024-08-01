@@ -15,9 +15,13 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.doachgosum.inapppurchasedemo.ui.HistoryScreen
+import com.doachgosum.inapppurchasedemo.ui.HomeScreen
+import com.doachgosum.inapppurchasedemo.ui.historyRoute
+import com.doachgosum.inapppurchasedemo.ui.homeRoute
 import com.doachgosum.inapppurchasedemo.ui.theme.InAppPurchaseDemoTheme
+import com.doachgosum.inapppurchasedemo.utils.BillingClientWrapper
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
 
 @AndroidEntryPoint

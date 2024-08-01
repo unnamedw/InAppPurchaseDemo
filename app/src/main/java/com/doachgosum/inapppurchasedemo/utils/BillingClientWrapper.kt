@@ -1,4 +1,4 @@
-package com.doachgosum.inapppurchasedemo
+package com.doachgosum.inapppurchasedemo.utils
 
 import android.app.Activity
 import android.content.Context
@@ -22,7 +22,7 @@ import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchasesParams
 import com.android.billingclient.api.acknowledgePurchase
 import com.android.billingclient.api.consumePurchase
-import com.doachgosum.inapppurchasedemo.BillingConstants.LIST_OF_ONE_TIME_PRODUCTS
+import com.doachgosum.inapppurchasedemo.utils.BillingConstants.LIST_OF_ONE_TIME_PRODUCTS
 import com.doachgosum.inapppurchasedemo.di.DispatcherQualifiers
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher

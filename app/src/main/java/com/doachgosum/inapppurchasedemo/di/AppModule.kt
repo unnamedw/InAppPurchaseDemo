@@ -1,7 +1,7 @@
 package com.doachgosum.inapppurchasedemo.di
 
 import android.content.Context
-import com.doachgosum.inapppurchasedemo.BillingClientWrapper
+import com.doachgosum.inapppurchasedemo.utils.BillingClientWrapper
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
