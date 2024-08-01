@@ -1,6 +1,6 @@
 package com.doachgosum.inapppurchasedemo.data
 
-0import com.doachgosum.inapppurchasedemo.BillingClientWrapper
+import com.doachgosum.inapppurchasedemo.BillingClientWrapper
 import com.doachgosum.inapppurchasedemo.di.DiConstant
 import com.doachgosum.inapppurchasedemo.di.DispatcherQualifiers
 import kotlinx.coroutines.CoroutineDispatcher
@@ -28,7 +28,7 @@ class BillingRepositoryImpl @Inject constructor(
             .map { it.toBillingProductDetails() }
             .stateIn(externalScope, SharingStarted.WhileSubscribed(), emptyList())
 
-    override val oneTImeProductPurchase: StateFlow<List<BillingProductPurchase>> =
+    override val oneTimeProductPurchase: StateFlow<List<BillingProductPurchase>> =
         billingClientWrapper.oneTimeProductPurchases
             .map { it.toBillingProductPurchases() }
             .stateIn(externalScope, SharingStarted.WhileSubscribed(), emptyList())
@@ -44,7 +44,7 @@ class BillingRepositoryImpl @Inject constructor(
 
 interface BillingRepository {
     val oneTimeProductDetails: StateFlow<List<BillingProductDetail>>
-    val oneTImeProductPurchase: StateFlow<List<BillingProductPurchase>>
+    val oneTimeProductPurchase: StateFlow<List<BillingProductPurchase>>
 
     suspend fun registerOneTimeProduct(
         productId: String,
