@@ -15,8 +15,11 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.doachgosum.inapppurchasedemo.ui.HistoryScreen
 import com.doachgosum.inapppurchasedemo.ui.HomeScreen
+import com.doachgosum.inapppurchasedemo.ui.PurchaseDetail
+import com.doachgosum.inapppurchasedemo.ui.PurchaseDetailScreen
 import com.doachgosum.inapppurchasedemo.ui.historyRoute
 import com.doachgosum.inapppurchasedemo.ui.homeRoute
 import com.doachgosum.inapppurchasedemo.ui.theme.InAppPurchaseDemoTheme
@@ -56,7 +59,18 @@ class MainActivity : ComponentActivity() {
                             }
 
                             composable(historyRoute) {
-                                HistoryScreen(clientWrapper = billingClientWrapper)
+                                HistoryScreen(
+                                    mainNavController = mainNavController,
+                                    mainViewModel = mainViewModel,
+                                    clientWrapper = billingClientWrapper
+                                )
+                            }
+
+                            composable<PurchaseDetail> {
+                                PurchaseDetailScreen(
+                                    billingClientWrapper = billingClientWrapper,
+                                    purchaseDetail = it.toRoute()
+                                )
                             }
                         }
                     }

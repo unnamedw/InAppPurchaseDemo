@@ -3,6 +3,8 @@ package com.doachgosum.inapppurchasedemo.data
 import com.doachgosum.inapppurchasedemo.utils.BillingClientWrapper
 import com.doachgosum.inapppurchasedemo.di.DiConstant
 import com.doachgosum.inapppurchasedemo.di.DispatcherQualifiers
+import com.doachgosum.inapppurchasedemo.domain.BillingProductDetail
+import com.doachgosum.inapppurchasedemo.domain.BillingProductPurchase
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob

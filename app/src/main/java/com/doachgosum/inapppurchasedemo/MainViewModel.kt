@@ -37,4 +37,10 @@ class MainViewModel @Inject constructor(
 
         onReadyToHandlePurchase(purchases)
     }
+
+    fun getProductsFromPurchases(purchase: Purchase, onReadyToHandleProducts: suspend (List<ProductDetails>) -> Unit) = viewModelScope.launch {
+        val products = purchase.products.map { productList.value.filter { product -> product.productId == it } }.flatten()
+
+        onReadyToHandleProducts(products)
+    }
 }

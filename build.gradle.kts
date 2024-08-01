@@ -4,4 +4,8 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android) apply false
     id("com.google.devtools.ksp") version libs.versions.ksp apply false
     id("com.google.dagger.hilt.android") version libs.versions.hilt apply false
+    id("org.jetbrains.kotlin.jvm") version libs.versions.kotlin apply false
+    id("org.jetbrains.kotlin.plugin.serialization") version libs.versions.kotlin apply false
+//    kotlin("jvm") version "1.5.0"
+//    kotlin("plugin.serialization") version "1.5.0"
 }
