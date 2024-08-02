@@ -10,11 +10,11 @@ data class BillingProductDetail(
     val productId: String,
     val productName: String,
     val formattedPrice: String = "",
-    val price: Long = 0L,
-    val localizedCurrency: String = "",
-    val timestamp: Instant = Clock.System.now(),
+    val priceMicros: Long = 0L, // ex) ₩ 1,000 -> 1000000000
+    val currencyCode: String = "",
 )
 
 data class BillingProductPurchase(
-    val purchaseToken: String = ""
+    val purchaseToken: String = "",
+    val timestamp: Instant = Clock.System.now(),
 )

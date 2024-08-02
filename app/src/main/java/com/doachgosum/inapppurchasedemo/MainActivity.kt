@@ -18,10 +18,14 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.doachgosum.inapppurchasedemo.ui.HistoryScreen
 import com.doachgosum.inapppurchasedemo.ui.HomeScreen
+import com.doachgosum.inapppurchasedemo.ui.OneTimeProductScreen
 import com.doachgosum.inapppurchasedemo.ui.PurchaseDetail
 import com.doachgosum.inapppurchasedemo.ui.PurchaseDetailScreen
+import com.doachgosum.inapppurchasedemo.ui.SubscriptionScreen
 import com.doachgosum.inapppurchasedemo.ui.historyRoute
 import com.doachgosum.inapppurchasedemo.ui.homeRoute
+import com.doachgosum.inapppurchasedemo.ui.oneTimeProductRoute
+import com.doachgosum.inapppurchasedemo.ui.subscriptionRoute
 import com.doachgosum.inapppurchasedemo.ui.theme.InAppPurchaseDemoTheme
 import com.doachgosum.inapppurchasedemo.utils.BillingClientWrapper
 import dagger.hilt.android.AndroidEntryPoint
@@ -34,6 +38,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        lifecycle.addObserver(billingClientWrapper)
 
         enableEdgeToEdge()
         setContent {
@@ -70,6 +75,22 @@ class MainActivity : ComponentActivity() {
                                 PurchaseDetailScreen(
                                     billingClientWrapper = billingClientWrapper,
                                     purchaseDetail = it.toRoute()
+                                )
+                            }
+
+                            composable(oneTimeProductRoute) {
+                                OneTimeProductScreen(
+                                    mainNavController = mainNavController,
+                                    mainViewModel = mainViewModel,
+                                    clientWrapper = billingClientWrapper
+                                )
+                            }
+
+                            composable(subscriptionRoute) {
+                                SubscriptionScreen(
+                                    mainViewModel = mainViewModel,
+                                    mainNavController = mainNavController,
+                                    clientWrapper = billingClientWrapper
                                 )
                             }
                         }

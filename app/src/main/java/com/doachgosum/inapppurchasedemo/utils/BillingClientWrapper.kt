@@ -47,12 +47,24 @@ class BillingClientWrapper @Inject constructor(
     }
 
     private val _oneTimeProductPurchases = MutableStateFlow<List<Purchase>>(emptyList())
-    val oneTimeProductPurchases = _oneTimeProductPurchases.asStateFlow()
+    private val _subscriptionPurchases = MutableStateFlow<List<Purchase>>(emptyList())
 
     private val _oneTimeProductDetails = MutableStateFlow<List<ProductDetails>>(emptyList())
-    val oneTimeProductDetails = _oneTimeProductDetails.asStateFlow()
+    private val _subscriptionProductDetails = MutableStateFlow<Map<String, ProductDetails>>(emptyMap())
 
-    private var cachedPurchasesList: List<Purchase>? = null
+    /**
+     * Purchases
+     * */
+    val oneTimeProductPurchases = _oneTimeProductPurchases.asStateFlow()
+    val subscriptionPurchases = _subscriptionPurchases.asStateFlow()
+
+    /**
+     * Product details for each product type
+     * */
+    val oneTimeProductDetails = _oneTimeProductDetails.asStateFlow()
+    val subscriptionProductDetails = _subscriptionProductDetails.asStateFlow()
+
+    private var cachedOneTimeProductPurchasesList: List<Purchase>? = null
 
     private lateinit var billingClient: BillingClient
 
@@ -107,9 +119,22 @@ class BillingClientWrapper @Inject constructor(
         )
     }
 
-    fun queryOneTimeProductDetails() {
+    fun querySubscriptionProductPurchases() {
+        if (!billingClient.isReady) {
+            logger { "queryPurchases: BillingClient is not ready" }
+        }
+
+        billingClient.queryPurchasesAsync(
+            QueryPurchasesParams.newBuilder()
+                .setProductType(BillingClient.ProductType.SUBS)
+                .build(),
+            this
+        )
+    }
+
+    fun queryOneTimeProductDetails(productIds: List<String> = LIST_OF_ONE_TIME_PRODUCTS) {
         val params = QueryProductDetailsParams.newBuilder()
-        val productList = LIST_OF_ONE_TIME_PRODUCTS.map { product ->
+        val productList = productIds.map { product ->
             QueryProductDetailsParams.Product.newBuilder()
                 .setProductId(product)
                 .setProductType(BillingClient.ProductType.INAPP)
@@ -118,6 +143,24 @@ class BillingClientWrapper @Inject constructor(
 
         params.setProductList(productList).let {
             billingClient.queryProductDetailsAsync(it.build(), this)
+        }
+    }
+
+    fun querySubscriptionProductDetails(productIds: List<String>) {
+        val params = QueryProductDetailsParams.newBuilder()
+        val productList = mutableListOf<QueryProductDetailsParams.Product>()
+
+        for (product in productIds) {
+            productList.add(
+                QueryProductDetailsParams.Product.newBuilder()
+                    .setProductId(product)
+                    .setProductType(BillingClient.ProductType.SUBS)
+                    .build()
+            )
+        }
+
+        params.setProductList(productList).let { productDetailsParams ->
+            billingClient.queryProductDetailsAsync(productDetailsParams.build(), this)
         }
     }
 
@@ -152,10 +195,20 @@ class BillingClientWrapper @Inject constructor(
     }
 
     private fun postProductDetails(productDetailsList: List<ProductDetails>) {
-        val oneTimeProductDetailsList  = productDetailsList
-            .filter { it.productType == BillingClient.ProductType.INAPP }
-            .filter { LIST_OF_ONE_TIME_PRODUCTS.contains(it.productId) }
+        val subscriptionProductDetailsList = mutableListOf<ProductDetails>()
+        val oneTimeProductDetailsList = mutableListOf<ProductDetails>()
+        productDetailsList.forEach {
+            when (it.productType) {
+                BillingClient.ProductType.SUBS -> {
+                    subscriptionProductDetailsList.add(it)
+                }
+                BillingClient.ProductType.INAPP -> {
+                    oneTimeProductDetailsList.add(it)
+                }
+            }
+        }
 
+        _subscriptionProductDetails.value = subscriptionProductDetailsList.associateBy { it.productId }
         _oneTimeProductDetails.value = oneTimeProductDetailsList
     }
 
@@ -207,9 +260,9 @@ class BillingClientWrapper @Inject constructor(
     }
 
     private fun isUnchangedPurchaseList(purchasesList: List<Purchase>): Boolean {
-        val isUnchanged = purchasesList == cachedPurchasesList
+        val isUnchanged = purchasesList == cachedOneTimeProductPurchasesList
         if (!isUnchanged) {
-            cachedPurchasesList = purchasesList
+            cachedOneTimeProductPurchasesList = purchasesList
         }
         return isUnchanged
     }

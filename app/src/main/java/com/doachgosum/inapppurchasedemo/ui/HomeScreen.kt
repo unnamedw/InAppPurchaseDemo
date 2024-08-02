@@ -32,10 +32,6 @@ fun HomeScreen(
     clientWrapper: BillingClientWrapper
 ) {
     val context = LocalContext.current
-    val lifecycle = LocalLifecycleOwner.current.lifecycle
-    lifecycle.removeObserver(clientWrapper)
-    lifecycle.addObserver(clientWrapper)
-
     val scrollState = rememberScrollState()
 
     Column(
@@ -44,54 +40,18 @@ fun HomeScreen(
         verticalArrangement = Arrangement.Center
     ) {
         val activity = LocalContext.current as Activity
-        val products by mainViewModel.productList.collectAsState()
-        val buttonModels by remember {
-            derivedStateOf {
-                products.map {
-                    listOfNotNull(
-
-                        // 상품
-                        ButtonModel("${it.name} (${it.oneTimePurchaseOfferDetails?.priceCurrencyCode} ${it.oneTimePurchaseOfferDetails?.formattedPrice})") {
-                            val billingParams = listOf(
-                                BillingFlowParams.ProductDetailsParams.newBuilder()
-                                    .setProductDetails(it)
-                                    .build()
-                            )
-                            clientWrapper.launchBillingFlow(
-                                activity,
-                                BillingFlowParams.newBuilder()
-                                    .setProductDetailsParamsList(billingParams)
-                                    .build()
-                            )
-                        },
-
-                        // consume
-                        ButtonModel("consume") {
-                            mainViewModel.getProductPurchase(it) { purchase ->
-                                val result = clientWrapper.consumeOneTimeProduct(purchase)
-                                Toast.makeText(context, result.billingResult.responseCode.toResponseCodeString(), Toast.LENGTH_SHORT).show()
-                            }
-                        },
-
-                        // acknowledge
-                        ButtonModel("acknowledge") {
-                            mainViewModel.getProductPurchase(it) { purchase ->
-                                val result = clientWrapper.acknowledgeOneTimeProduct(purchase)
-                                Toast.makeText(context, result.responseCode.toResponseCodeString(), Toast.LENGTH_SHORT).show()
-                            }
-                        }
-
-                    )
-                }.flatten() + listOf(
-                    ButtonModel("구매내역") {
-                        mainNavController.navigate(historyRoute)
-                    },
-                )
+        val buttonModels = listOf(
+            ButtonModel("One Time Product") {
+                mainNavController.navigate(oneTimeProductRoute)
+            },
+            ButtonModel("Subscription") {
+                mainNavController.navigate(subscriptionRoute)
             }
-        }
+        )
 
+        val purchaseHistoryButtonModel = listOf(ButtonModel("구매내역") { mainNavController.navigate(historyRoute) })
         ButtonGroup(
-            buttonModels = buttonModels
+            buttonModels = buttonModels + purchaseHistoryButtonModel
         )
     }
 }

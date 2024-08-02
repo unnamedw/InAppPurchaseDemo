@@ -12,6 +12,9 @@ internal fun ProductDetails.toBillingProductDetail(): BillingProductDetail {
     return BillingProductDetail(
         productId = this.productId,
         productName = this.name,
+        formattedPrice = this.oneTimePurchaseOfferDetails?.formattedPrice ?: "",
+        priceMicros = this.oneTimePurchaseOfferDetails?.priceAmountMicros ?: 0L,
+        currencyCode = this.oneTimePurchaseOfferDetails?.priceCurrencyCode ?: ""
     )
 }
 
