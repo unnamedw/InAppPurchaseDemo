@@ -41,33 +41,23 @@ class BillingClientWrapper @Inject constructor(
 ) : DefaultLifecycleObserver, BillingClientStateListener,
     PurchasesUpdatedListener, ProductDetailsResponseListener, PurchasesResponseListener
 {
-
     private fun logger(block: () -> String) {
         Log.d("BillingClient", block())
     }
 
     private val _oneTimeProductPurchases = MutableStateFlow<List<Purchase>>(emptyList())
-    private val _subscriptionPurchases = MutableStateFlow<List<Purchase>>(emptyList())
+    val oneTimeProductPurchases = _oneTimeProductPurchases.asStateFlow()
 
     private val _oneTimeProductDetails = MutableStateFlow<List<ProductDetails>>(emptyList())
-    private val _subscriptionProductDetails = MutableStateFlow<Map<String, ProductDetails>>(emptyMap())
-
-    /**
-     * Purchases
-     * */
-    val oneTimeProductPurchases = _oneTimeProductPurchases.asStateFlow()
-    val subscriptionPurchases = _subscriptionPurchases.asStateFlow()
-
-    /**
-     * Product details for each product type
-     * */
     val oneTimeProductDetails = _oneTimeProductDetails.asStateFlow()
-    val subscriptionProductDetails = _subscriptionProductDetails.asStateFlow()
 
-    private var cachedOneTimeProductPurchasesList: List<Purchase>? = null
+    private var cachedPurchasesList: List<Purchase>? = null
 
     private lateinit var billingClient: BillingClient
 
+    /**
+     * MainActivity 진입 시 lifecycle.addObserver 를 통해 등록/해제 처리.
+     * */
     override fun onCreate(owner: LifecycleOwner) {
         billingClient = BillingClient.newBuilder(applicationContext)
             .setListener(this)
@@ -78,14 +68,12 @@ class BillingClientWrapper @Inject constructor(
                     .build()
             ).build()
         if (!billingClient.isReady) {
-            logger { "BillingClient: Start connection..." }
             billingClient.startConnection(this)
         }
     }
 
     override fun onDestroy(owner: LifecycleOwner) {
         if (billingClient.isReady) {
-            logger { "BillingClient can only be used once -- closing connection" }
             billingClient.endConnection()
         }
     }
@@ -119,19 +107,6 @@ class BillingClientWrapper @Inject constructor(
         )
     }
 
-    fun querySubscriptionProductPurchases() {
-        if (!billingClient.isReady) {
-            logger { "queryPurchases: BillingClient is not ready" }
-        }
-
-        billingClient.queryPurchasesAsync(
-            QueryPurchasesParams.newBuilder()
-                .setProductType(BillingClient.ProductType.SUBS)
-                .build(),
-            this
-        )
-    }
-
     fun queryOneTimeProductDetails(productIds: List<String> = LIST_OF_ONE_TIME_PRODUCTS) {
         val params = QueryProductDetailsParams.newBuilder()
         val productList = productIds.map { product ->
@@ -143,24 +118,6 @@ class BillingClientWrapper @Inject constructor(
 
         params.setProductList(productList).let {
             billingClient.queryProductDetailsAsync(it.build(), this)
-        }
-    }
-
-    fun querySubscriptionProductDetails(productIds: List<String>) {
-        val params = QueryProductDetailsParams.newBuilder()
-        val productList = mutableListOf<QueryProductDetailsParams.Product>()
-
-        for (product in productIds) {
-            productList.add(
-                QueryProductDetailsParams.Product.newBuilder()
-                    .setProductId(product)
-                    .setProductType(BillingClient.ProductType.SUBS)
-                    .build()
-            )
-        }
-
-        params.setProductList(productList).let { productDetailsParams ->
-            billingClient.queryProductDetailsAsync(productDetailsParams.build(), this)
         }
     }
 
@@ -195,20 +152,9 @@ class BillingClientWrapper @Inject constructor(
     }
 
     private fun postProductDetails(productDetailsList: List<ProductDetails>) {
-        val subscriptionProductDetailsList = mutableListOf<ProductDetails>()
-        val oneTimeProductDetailsList = mutableListOf<ProductDetails>()
-        productDetailsList.forEach {
-            when (it.productType) {
-                BillingClient.ProductType.SUBS -> {
-                    subscriptionProductDetailsList.add(it)
-                }
-                BillingClient.ProductType.INAPP -> {
-                    oneTimeProductDetailsList.add(it)
-                }
-            }
-        }
+        val oneTimeProductDetailsList  = productDetailsList
+            .filter { it.productType == BillingClient.ProductType.INAPP }
 
-        _subscriptionProductDetails.value = subscriptionProductDetailsList.associateBy { it.productId }
         _oneTimeProductDetails.value = oneTimeProductDetailsList
     }
 
@@ -241,14 +187,9 @@ class BillingClientWrapper @Inject constructor(
             }
 
             BillingClient.BillingResponseCode.DEVELOPER_ERROR -> {
-                logger {
-                    "onPurchasesUpdated: Developer error means that Google Play does " +
-                            "not recognize the configuration. If you are just getting started, " +
-                            "make sure you have configured the application correctly in the " +
-                            "Google Play Console. The product ID must match and the APK you " +
-                            "are using must be signed with release keys."
-                }
+                logger { "onPurchasesUpdated: Developer error" }
             }
+
         }
     }
 
@@ -260,9 +201,9 @@ class BillingClientWrapper @Inject constructor(
     }
 
     private fun isUnchangedPurchaseList(purchasesList: List<Purchase>): Boolean {
-        val isUnchanged = purchasesList == cachedOneTimeProductPurchasesList
+        val isUnchanged = purchasesList == cachedPurchasesList
         if (!isUnchanged) {
-            cachedOneTimeProductPurchasesList = purchasesList
+            cachedPurchasesList = purchasesList
         }
         return isUnchanged
     }
@@ -284,14 +225,16 @@ class BillingClientWrapper @Inject constructor(
         }
     }
 
+    /**
+     * 구매 시작
+     * */
     fun launchBillingFlow(activity: Activity, params: BillingFlowParams) {
         if (!billingClient.isReady) {
             logger { "launchBillingFlow: BillingClient is not ready" }
         }
+
         billingClient.launchBillingFlow(activity, params)
-
     }
-
 
     /**
      * For testing
