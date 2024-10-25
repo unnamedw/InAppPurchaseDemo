@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.LifecycleOwner
 import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClientStateListener
@@ -28,7 +27,10 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -51,14 +53,22 @@ class BillingClientWrapper @Inject constructor(
     private val _oneTimeProductDetails = MutableStateFlow<List<ProductDetails>>(emptyList())
     val oneTimeProductDetails = _oneTimeProductDetails.asStateFlow()
 
+    private val _purchaseEvent = MutableSharedFlow<List<Purchase>>(
+        extraBufferCapacity = 10,
+        onBufferOverflow = BufferOverflow.SUSPEND
+    )
+    val purchaseEvent = _purchaseEvent.asSharedFlow()
+
     private var cachedPurchasesList: List<Purchase>? = null
 
     private lateinit var billingClient: BillingClient
+    private var isInitialized = false
 
-    /**
-     * MainActivity 진입 시 lifecycle.addObserver 를 통해 등록/해제 처리.
-     * */
-    override fun onCreate(owner: LifecycleOwner) {
+    fun startBillingConnection() {
+        if (isInitialized) {
+            terminateBillingConnection()
+        }
+
         billingClient = BillingClient.newBuilder(applicationContext)
             .setListener(this)
             .enablePendingPurchases(
@@ -67,13 +77,18 @@ class BillingClientWrapper @Inject constructor(
                     .enableOneTimeProducts()
                     .build()
             ).build()
+
+        isInitialized = true
+
         if (!billingClient.isReady) {
+            logger { "billing client connected" }
             billingClient.startConnection(this)
         }
     }
 
-    override fun onDestroy(owner: LifecycleOwner) {
+    fun terminateBillingConnection() {
         if (billingClient.isReady) {
+            logger { "billing client end" }
             billingClient.endConnection()
         }
     }
@@ -174,6 +189,7 @@ class BillingClientWrapper @Inject constructor(
                     logger { "onPurchasesUpdated: null purchase list" }
                     processPurchases(null)
                 } else {
+                    _purchaseEvent.tryEmit(purchases)
                     processPurchases(purchases)
                 }
             }
@@ -228,12 +244,13 @@ class BillingClientWrapper @Inject constructor(
     /**
      * 구매 시작
      * */
-    fun launchBillingFlow(activity: Activity, params: BillingFlowParams) {
+    fun launchBillingFlow(activity: Activity, params: BillingFlowParams, onPurchase: (BillingResult) -> Unit = {}) {
         if (!billingClient.isReady) {
             logger { "launchBillingFlow: BillingClient is not ready" }
         }
 
-        billingClient.launchBillingFlow(activity, params)
+        val result = billingClient.launchBillingFlow(activity, params)
+        onPurchase(result)
     }
 
     /**
