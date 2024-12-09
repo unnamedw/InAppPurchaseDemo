@@ -13,6 +13,11 @@
         android:theme="@style/Theme.InAppPurchaseDemo"
         android:name=".MyApplication"
         tools:targetApi="31">
+
+        <meta-data
+            android:name="com.google.android.play.largest_release_audience.CLOSED_TESTING"
+            android:value="" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
